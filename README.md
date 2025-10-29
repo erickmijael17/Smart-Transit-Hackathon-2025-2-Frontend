@@ -1,0 +1,2 @@
+# Smart-Transit-Hackathon-2025-2-Frontend
+Hackathon 2025-2 TRANSPORTE INTELIGENETE EN LA CIUDAD DE JULIACA

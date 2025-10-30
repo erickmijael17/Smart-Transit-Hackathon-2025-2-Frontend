@@ -1,0 +1,108 @@
+{
+  "suggestions": [
+    {
+      "routeId": "18",
+      "routeName": "Línea 18",
+      "routeColor": "#007bff",
+      "score": 85.5,
+      "boardingStop": {
+        "id": "18-S001",
+        "name": "Terminal",
+        "latitude": -15.4950,
+        "longitude": -70.1549,
+        "distanceFromOrigin": 125.5
+      },
+      "alightingStop": {
+        "id": "18-S015",
+        "name": "Plaza Central",
+        "latitude": -15.5000,
+        "longitude": -70.1300,
+        "distanceFromDestination": 89.2
+      },
+      "walkingDistanceToStop": 125.5,
+      "walkingTimeToStop": 2,
+      "estimatedTravelTime": 15,
+      "totalTripTime": 19,
+      "numberOfStops": 14,
+      "directions": "Muy cerca de tu ubicación y te deja muy cerca del destino. ¡Excelente opción!",
+      "walkingPaths": [
+        {
+          "type": "USER_TO_STOP",
+          "coordinates": [
+            [-15.494655, -70.154834],
+            [-15.4950, -70.1549]
+          ],
+          "distance": 125.5,
+          "estimatedWalkingTime": 2,
+          "description": "Camina 126m hasta Terminal",
+          "color": "#4A90E2"
+        },
+        {
+          "type": "STOP_TO_DESTINATION",
+          "coordinates": [
+            [-15.5000, -70.1300],
+            [-15.5010, -70.1295]
+          ],
+          "distance": 89.2,
+          "estimatedWalkingTime": 2,
+          "description": "Camina 89m desde Plaza Central hasta tu destino",
+          "color": "#50C878"
+        }
+      ]
+    },
+    {
+      "routeId": "3",
+      "routeName": "Línea 3",
+      "routeColor": "#28a745",
+      "score": 72.3,
+      "boardingStop": {
+        "id": "3-S008",
+        "name": "San José",
+        "latitude": -15.4960,
+        "longitude": -70.1520,
+        "distanceFromOrigin": 250.8
+      },
+      "alightingStop": {
+        "id": "3-S022",
+        "name": "Mercado Central",
+        "latitude": -15.5005,
+        "longitude": -70.1290,
+        "distanceFromDestination": 150.3
+      },
+      "walkingDistanceToStop": 250.8,
+      "walkingTimeToStop": 4,
+      "estimatedTravelTime": 18,
+      "totalTripTime": 24,
+      "numberOfStops": 18,
+      "directions": "Opción alternativa con más paradas pero buena cobertura.",
+      "walkingPaths": [
+        {
+          "type": "USER_TO_STOP",
+          "coordinates": [
+            [-15.494655, -70.154834],
+            [-15.4960, -70.1520]
+          ],
+          "distance": 250.8,
+          "estimatedWalkingTime": 4,
+          "description": "Camina 251m hasta San José",
+          "color": "#4A90E2"
+        },
+        {
+          "type": "STOP_TO_DESTINATION",
+          "coordinates": [
+            [-15.5005, -70.1290],
+            [-15.5010, -70.1295]
+          ],
+          "distance": 150.3,
+          "estimatedWalkingTime": 2,
+          "description": "Camina 150m desde Mercado Central hasta tu destino",
+          "color": "#50C878"
+        }
+      ]
+    }
+  ],
+  "originAddress": "Av. Huancané, Juliaca",
+  "destinationAddress": "Plaza de Armas, Juliaca",
+  "totalSuggestions": 2,
+  "message": "Se encontraron 2 rutas sugeridas para tu viaje"
+}

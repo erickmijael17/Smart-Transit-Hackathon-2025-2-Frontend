@@ -1,0 +1,151 @@
+<div class="admin-dashboard">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <button class="back-btn" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        <span>Volver</span>
+      </button>
+      <div class="header-info">
+        <h1>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l9 4.5v5C21 17 16.5 21 12 22c-4.5-1-9-5-9-10.5v-5z"/>
+          </svg>
+          Panel Administrativo
+        </h1>
+        <p>Bienvenido, {{ currentAdmin()?.fullName || currentAdmin()?.username || 'Administrador' }}</p>
+      </div>
+      <button class="logout-btn" (click)="logout()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Estadísticas -->
+  <section class="stats-section">
+    <h2 class="section-title">Resumen General</h2>
+    <div class="stats-grid">
+      @for (stat of stats(); track stat.title) {
+        <div class="stat-card" [style.--card-color]="stat.color">
+          <div class="stat-icon">
+            @switch (stat.icon) {
+              @case ('route') {
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="6" cy="19" r="3"/>
+                  <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+                  <line x1="18" y1="5" x2="21" y2="5"/>
+                  <line x1="21" y1="12" x2="21" y2="12"/>
+                  <line x1="3" y1="5" x2="3" y2="5"/>
+                </svg>
+              }
+              @case ('bus') {
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M8 6v6"/>
+                  <path d="M16 6v6"/>
+                  <path d="M2 12h19.6"/>
+                  <path d="M18 18h3s.5-1.7.5-3c0-2-1-3-2-3"/>
+                  <path d="M2 12v6c0 1.5.5 2 2 2h14c1.5 0 2-.5 2-2v-6"/>
+                  <path d="M8 18v1"/>
+                  <path d="M16 18v1"/>
+                </svg>
+              }
+              @case ('driver') {
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              }
+              @case ('passenger') {
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              }
+            }
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ stat.value }}</div>
+            <div class="stat-title">{{ stat.title }}</div>
+            @if (stat.trend) {
+              <div class="stat-trend" [class.positive]="stat.trend.isPositive" [class.negative]="!stat.trend.isPositive">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  @if (stat.trend.isPositive) {
+                    <polyline points="18 15 12 9 6 15"/>
+                  } @else {
+                    <polyline points="6 9 12 15 18 9"/>
+                  }
+                </svg>
+                {{ stat.trend.value }}
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Acciones Rápidas -->
+  <section class="actions-section">
+    <h2 class="section-title">Acciones Rápidas</h2>
+    <div class="actions-grid">
+      @for (action of quickActions; track action.title) {
+        <button class="action-card" (click)="navigateTo(action.route)" [style.--action-color]="action.color">
+          <div class="action-icon">
+            @switch (action.icon) {
+              @case ('upload') {
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              }
+              @case ('bus-manage') {
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M8 6v6"/>
+                  <path d="M16 6v6"/>
+                  <path d="M2 12h19.6"/>
+                  <path d="M18 18h3s.5-1.7.5-3c0-2-1-3-2-3"/>
+                  <path d="M2 12v6c0 1.5.5 2 2 2h14c1.5 0 2-.5 2-2v-6"/>
+                </svg>
+              }
+              @case ('users') {
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              }
+              @case ('map') {
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                  <line x1="8" y1="2" x2="8" y2="18"/>
+                  <line x1="16" y1="6" x2="16" y2="22"/>
+                </svg>
+              }
+            }
+          </div>
+          <div class="action-content">
+            <h3>{{ action.title }}</h3>
+            <p>{{ action.description }}</p>
+          </div>
+          <svg class="action-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+      }
+    </div>
+  </section>
+</div>
+

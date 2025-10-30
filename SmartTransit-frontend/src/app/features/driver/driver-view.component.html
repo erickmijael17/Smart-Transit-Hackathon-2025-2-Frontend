@@ -1,0 +1,227 @@
+<div class="driver-view-container">
+  <!-- Diálogo de selección de ruta y bus -->
+  @if (showRouteBusDialog()) {
+    <div class="dialog-overlay" (click)="showRouteBusDialog.set(false)">
+      <div class="dialog-container" (click)="$event.stopPropagation()">
+        <div class="dialog-header">
+          <h2>Asignar Ruta y Bus</h2>
+          <button class="dialog-close" (click)="showRouteBusDialog.set(false)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="dialog-content">
+          <div class="form-group">
+            <label>Selecciona tu ruta:</label>
+            <select 
+              class="form-select"
+              [value]="selectedRouteId() || ''"
+              (change)="selectedRouteId.set($any($event.target).value)"
+            >
+              <option value="">-- Selecciona una ruta --</option>
+              @for (route of availableRoutes(); track route.id) {
+                <option [value]="route.id">{{ route.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>ID del Bus:</label>
+            <input 
+              type="text"
+              class="form-input"
+              [value]="selectedBusId()"
+              (input)="selectedBusId.set($any($event.target).value)"
+              placeholder="Ej: BUS_001"
+            />
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn-secondary" (click)="showRouteBusDialog.set(false)">Cancelar</button>
+          <button class="btn-primary" (click)="confirmRouteBusSelection()">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Mapa principal (similar a Waze/Google Maps) -->
+  <div class="map-section">
+    @if (currentDriver()?.routeId && currentDriver()?.busId) {
+      <app-driver-map 
+        [routeId]="currentDriver()!.routeId ?? null" 
+        [busId]="currentDriver()!.busId ?? null"
+      ></app-driver-map>
+    }
+  </div>
+
+  <!-- Header compacto flotante -->
+  <header class="driver-header-floating">
+    <div class="driver-info-compact">
+      <div class="driver-avatar-small">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="driver-details-compact">
+        <div class="driver-name">{{ currentDriver()?.driverName || 'Conductor' }}</div>
+        <div class="route-bus-info">
+          @if (currentDriver()?.routeId && currentDriver()?.busId) {
+            <span class="route-badge">{{ currentDriver()?.routeId }}</span>
+            <span class="bus-badge">{{ currentDriver()?.busId }}</span>
+          }
+        </div>
+      </div>
+    </div>
+    <button class="menu-toggle" (click)="showControls.set(!showControls())">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Panel de controles lateral (deslizable) -->
+  <aside class="controls-panel" [class.open]="showControls()">
+    <div class="panel-header">
+      <h3>Controles</h3>
+      <button class="panel-close" (click)="showControls.set(false)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="panel-content">
+      <!-- Estado del GPS -->
+      <div class="control-card">
+        <div class="control-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <span>GPS</span>
+        </div>
+        <div class="control-status" [class.active]="isGpsEnabled()">
+          @if (isGpsEnabled()) {
+            <span class="status-indicator-dot active"></span>
+            <span>Activado</span>
+          } @else {
+            <span class="status-indicator-dot"></span>
+            <span>Desactivado</span>
+          }
+        </div>
+        <button
+          class="control-toggle-button"
+          [class.active]="isGpsEnabled()"
+          (click)="toggleGps()"
+          [disabled]="isLoadingGps()"
+        >
+          {{ isGpsEnabled() ? 'Desactivar' : 'Activar' }}
+        </button>
+      </div>
+
+      <!-- Ocupación -->
+      <div class="control-card">
+        <div class="control-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span>Ocupación</span>
+        </div>
+        <div class="occupancy-selector-compact">
+          @for (level of occupancyLevels; track level.value) {
+            <button
+              class="occupancy-btn"
+              [class.selected]="selectedOccupancy() === level.value"
+              [class.empty]="level.value === OccupancyLevel.EMPTY"
+              [class.medium]="level.value === OccupancyLevel.AVAILABLE"
+              [class.full]="level.value === OccupancyLevel.FULL"
+              (click)="selectOccupancy(level.value)"
+            >
+              {{ level.icon }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Tracking -->
+      <div class="control-card">
+        <div class="control-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span>Tracking</span>
+        </div>
+        <div class="control-status" [class.active]="isTrackingEnabled()">
+          @if (isTrackingEnabled()) {
+            <span class="status-indicator-dot active"></span>
+            <span>Activo</span>
+          } @else {
+            <span class="status-indicator-dot"></span>
+            <span>Inactivo</span>
+          }
+        </div>
+        <button
+          class="control-toggle-button"
+          [class.active]="isTrackingEnabled()"
+          (click)="toggleTracking()"
+          [disabled]="!isGpsEnabled() || isLoadingTracking()"
+        >
+          {{ isTrackingEnabled() ? 'Desactivar' : 'Activar' }}
+        </button>
+        @if (!isGpsEnabled()) {
+          <p class="warning-text">
+            ⚠️ Activa el GPS primero
+          </p>
+        }
+      </div>
+
+      <!-- Info adicional -->
+      @if (isGpsEnabled() && currentLocation(); as location) {
+        <div class="info-card-compact">
+          <div class="info-row">
+            <span>Precisión:</span>
+            <strong>{{ location.accuracy.toFixed(0) }} m</strong>
+          </div>
+          <div class="info-row">
+            <span>Actualizado:</span>
+            <strong>{{ lastUpdateTime() || 'N/A' }}</strong>
+          </div>
+        </div>
+      }
+
+      <!-- Logout -->
+      <button class="logout-button-panel" (click)="logout()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span>Cerrar Sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Botones flotantes de acción rápida -->
+  <div class="floating-actions">
+    <button 
+      class="fab gps-fab" 
+      [class.active]="isGpsEnabled()"
+      (click)="toggleGps()"
+      [title]="isGpsEnabled() ? 'GPS Activado' : 'Activar GPS'"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,2055 @@
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.map-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  background: #f5f5f5;
+}
+
+.leaflet-map {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+// Estado de carga estilo WAZE
+.map-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  text-align: center;
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 178, 255, 0.1);
+  border: 2px solid rgba(0, 178, 255, 0.1);
+
+  p {
+    margin-top: 1.25rem;
+    font-size: 14px;
+    color: #616161;
+    font-weight: 500;
+  }
+}
+
+// Spinner animado estilo WAZE
+.spinner {
+  width: 50px;
+  height: 50px;
+  margin: 0 auto;
+  border: 4px solid #F5F5F5;
+  border-top: 4px solid #00B2FF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow: 0 2px 8px rgba(0, 178, 255, 0.2);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Estado de error estilo WAZE
+.map-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  text-align: center;
+  background: white;
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(255, 68, 68, 0.1);
+  max-width: 400px;
+  border: 2px solid rgba(255, 68, 68, 0.1);
+
+  .error-icon {
+    font-size: 48px;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 16px;
+    color: #FF4444;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  small {
+    font-size: 12px;
+    color: #9E9E9E;
+    display: block;
+  }
+}
+
+// ============================================
+// ANIMACIONES PREMIUM
+// ============================================
+
+// Animación de trazado de rutas
+@keyframes drawRoute {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+// Animación de entrada de markers mejorada
+@keyframes markerAppear {
+  0% {
+    transform: translateY(-30px) scale(0) rotate(-15deg);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(8px) scale(1.15) rotate(5deg);
+    opacity: 0.8;
+  }
+  70% {
+    transform: translateY(-3px) scale(0.95) rotate(-2deg);
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+// Animación de pulso básica en markers
+@keyframes markerPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+// Animación de pulso avanzada con múltiples ondas
+@keyframes markerPulseAdvanced {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.4;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+// Animación de resplandor
+@keyframes glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 2px currentColor);
+  }
+  50% {
+    filter: drop-shadow(0 0 8px currentColor);
+  }
+}
+
+// Animación de fade-in del mapa
+@keyframes mapFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Animación premium para popups
+@keyframes popupAppearPremium {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.9);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Animación para tooltips/labels de rutas
+@keyframes tooltipAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(-10px);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.08) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// ============================================
+// MAPA Y CONTENEDOR
+// ============================================
+
+.leaflet-map {
+  opacity: 0;
+
+  &.map-loaded {
+    animation: mapFadeIn 0.6s ease-out forwards;
+  }
+}
+
+// ============================================
+// MARKERS PERSONALIZADOS TIPO WAZE
+// ============================================
+
+:global {
+  // ============================================
+  // Z-INDEX LEAFLET - NOMBRES DE CALLES SIEMPRE ARRIBA
+  // ============================================
+
+  // Tiles del mapa (fondo)
+  .leaflet-tile-pane {
+    z-index: 1 !important;
+  }
+
+  // Overlays (imágenes superpuestas)
+  .leaflet-overlay-pane {
+    z-index: 2 !important;
+  }
+
+  // Sombras de markers y popups
+  .leaflet-shadow-pane {
+    z-index: 3 !important;
+  }
+
+  // Rutas y polylines (DEBAJO de labels)
+  .leaflet-pane {
+    svg.leaflet-zoom-animated {
+      z-index: 4 !important;
+    }
+  }
+
+  // Markers y puntos
+  .leaflet-marker-pane {
+    z-index: 6 !important;
+  }
+
+  // Tooltips
+  .leaflet-tooltip-pane {
+    z-index: 7 !important;
+  }
+
+  // Popups (ARRIBA de todo)
+  .leaflet-popup-pane {
+    z-index: 8 !important;
+  }
+
+  // Controles del mapa
+  .leaflet-control {
+    z-index: 9 !important;
+  }
+
+  // ============================================
+  // MARKERS PERSONALIZADOS TIPO WAZE
+  // ============================================
+
+  // Marker wrapper con animación premium
+  .custom-stop-marker,
+  .custom-endpoint-marker {
+    z-index: 600 !important;
+
+    .marker-wrapper {
+      position: relative;
+      animation: markerAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+      transform-style: preserve-3d;
+    }
+
+    .marker-pin {
+      position: relative;
+      z-index: 2;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-style: preserve-3d;
+
+      svg {
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 2px 4px rgba(0, 178, 255, 0.3));
+        transition: filter 0.4s ease;
+      }
+
+      // Texto de I y F
+      text {
+        user-select: none;
+        pointer-events: none;
+      }
+    }
+
+    // Efecto de pulso mejorado en el marker
+    .marker-pulse {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      animation: markerPulseAdvanced 2.5s ease-out infinite;
+      z-index: 1;
+      opacity: 0.7;
+    }
+
+    // Hover effect premium
+    &.marker-hover {
+      .marker-pin {
+        transform: translateY(-8px) scale(1.15) rotateX(5deg);
+
+        svg {
+          filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.3)) 
+                  drop-shadow(0 4px 12px rgba(0, 178, 255, 0.6))
+                  drop-shadow(0 0 16px currentColor);
+        }
+      }
+
+      .marker-pulse {
+        animation-duration: 1.2s;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  // Estilos específicos para markers de endpoints
+  .custom-endpoint-marker {
+    &.start-marker {
+      .marker-pin svg {
+        filter: drop-shadow(0 4px 8px rgba(0, 178, 255, 0.35));
+      }
+    }
+
+    &.end-marker {
+      .marker-pin svg {
+        filter: drop-shadow(0 4px 8px rgba(0, 217, 192, 0.35));
+      }
+    }
+
+    &.marker-hover {
+      .marker-pin {
+        transform: translateY(-8px) scale(1.15);
+
+        svg {
+          filter: drop-shadow(0 8px 20px rgba(0, 178, 255, 0.5));
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // POPUPS PREMIUM
+  // ============================================
+
+  .premium-popup-wrapper {
+    .leaflet-popup-content-wrapper {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border-radius: 24px;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15), 
+                  0 4px 12px rgba(0, 178, 255, 0.12),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      padding: 0;
+      overflow: hidden;
+      animation: popupAppearPremium 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      border: 2px solid rgba(0, 178, 255, 0.15);
+    }
+
+    .leaflet-popup-tip {
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+
+    .leaflet-popup-content {
+      margin: 0;
+      width: auto !important;
+    }
+  }
+
+  // Contenido del popup
+  .premium-popup {
+    font-family: system-ui, -apple-system, sans-serif;
+    min-width: 280px;
+
+    // Header del popup con glassmorphism
+    .popup-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px;
+      background: linear-gradient(135deg, rgba(240, 249, 255, 0.95) 0%, rgba(224, 242, 254, 0.95) 100%);
+      backdrop-filter: blur(10px) saturate(150%);
+      border-bottom: 1px solid rgba(0, 178, 255, 0.15);
+      position: relative;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(0, 178, 255, 0.3), transparent);
+      }
+
+      .popup-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #00B2FF 0%, #00D9C0 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 4px 16px rgba(0, 178, 255, 0.35);
+
+        svg {
+          color: white;
+        }
+      }
+
+      .popup-title {
+        flex: 1;
+        min-width: 0;
+
+        h3 {
+          margin: 0 0 4px 0;
+          font-size: 17px;
+          font-weight: 600;
+          color: #212121;
+          line-height: 1.2;
+        }
+
+        .popup-badge {
+          display: inline-block;
+          padding: 3px 10px;
+          background: rgba(0, 178, 255, 0.12);
+          color: #00B2FF;
+          border-radius: 8px;
+          font-size: 10px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+      }
+    }
+
+    // Contenido del popup
+    .popup-content {
+      padding: 16px;
+    }
+
+    // Grid de información estilo WAZE
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+
+      .info-card {
+        text-align: center;
+        padding: 14px 10px;
+        background: linear-gradient(135deg, rgba(250, 250, 250, 0.9), rgba(255, 255, 255, 0.9));
+        backdrop-filter: blur(10px);
+        border-radius: 14px;
+        border: 2px solid rgba(0, 178, 255, 0.08);
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+        overflow: hidden;
+
+        // Brillo sutil de fondo
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(0, 178, 255, 0.1), transparent);
+          transition: left 0.5s ease;
+        }
+
+        &:hover {
+          background: linear-gradient(135deg, rgba(224, 247, 255, 0.9), rgba(240, 249, 255, 0.9));
+          transform: translateY(-3px) scale(1.02);
+          box-shadow: 0 8px 24px rgba(0, 178, 255, 0.2),
+                      0 0 16px rgba(0, 178, 255, 0.1),
+                      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+          border-color: rgba(0, 178, 255, 0.3);
+
+          &::before {
+            left: 100%;
+          }
+        }
+
+        .info-icon {
+          font-size: 22px;
+          margin-bottom: 6px;
+        }
+
+        .info-details {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+
+          .info-label {
+            font-size: 9px;
+            color: #9E9E9E;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .info-value {
+            font-size: 14px;
+            color: #212121;
+            font-weight: 700;
+          }
+        }
+      }
+    }
+
+    // Filas de información estilo WAZE
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #F5F5F5;
+
+      &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+
+      .info-label {
+        font-size: 12px;
+        color: #9E9E9E;
+        font-weight: 500;
+      }
+
+      .info-value {
+        font-size: 12px;
+        color: #212121;
+        font-weight: 600;
+
+        // Estilos para la barra de progreso
+        &.progress-bar-container {
+          flex: 1;
+          height: 8px;
+          background: #E0E0E0;
+          border-radius: 4px;
+          margin: 0 8px;
+          overflow: hidden;
+
+          .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease-out;
+          }
+        }
+
+        &.progress-value {
+          min-width: 30px;
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+      }
+    }
+
+    // Preview de color estilo WAZE
+    .route-color-preview {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: #FAFAFA;
+      border-radius: 12px;
+      margin-top: 12px;
+      border: 1px solid #F5F5F5;
+
+      span {
+        font-size: 12px;
+        color: #9E9E9E;
+        font-weight: 500;
+      }
+
+      .color-swatch {
+        width: 48px;
+        height: 26px;
+        border-radius: 8px;
+        border: 2px solid white;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      }
+    }
+
+    // Acciones del popup con efectos premium
+    .popup-actions {
+      display: flex;
+      gap: 12px;
+      padding: 16px 18px;
+      background: rgba(250, 250, 250, 0.8);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(0, 178, 255, 0.08);
+
+      .popup-btn {
+        flex: 1;
+        padding: 12px 18px;
+        border: none;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+
+        svg {
+          width: 16px;
+          height: 16px;
+          transition: transform 0.3s ease;
+        }
+
+        // Efecto de brillo al pasar el mouse
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+          transition: left 0.5s ease;
+        }
+
+        &:hover::before {
+          left: 100%;
+        }
+
+        &.primary {
+          background: linear-gradient(135deg, #00B2FF 0%, #00D9C0 100%);
+          color: white;
+          box-shadow: 0 4px 16px rgba(0, 178, 255, 0.4),
+                      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+
+          &:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(0, 178, 255, 0.5),
+                        0 0 20px rgba(0, 217, 192, 0.3),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            
+            svg {
+              transform: scale(1.1);
+            }
+          }
+        }
+
+        &.secondary {
+          background: white;
+          color: #616161;
+          border: 2px solid #F0F0F0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+          &:hover {
+            background: #FAFAFA;
+            border-color: #00B2FF;
+            color: #00B2FF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 178, 255, 0.15);
+            
+            svg {
+              transform: scale(1.1);
+            }
+          }
+        }
+
+        &:active {
+          transform: translateY(0) scale(0.98);
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // CONTROLES DEL MAPA ESTILO WAZE
+  // ============================================
+
+  // Controles de zoom con glassmorphism premium
+  .leaflet-control-zoom {
+    border: none !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 
+                0 4px 12px rgba(0, 178, 255, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+
+    a {
+      border: none !important;
+      width: 52px !important;
+      height: 52px !important;
+      line-height: 52px !important;
+      font-size: 24px !important;
+      color: #616161 !important;
+      background: rgba(255, 255, 255, 0.95) !important;
+      backdrop-filter: blur(10px) !important;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      font-weight: 300 !important;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, transparent, rgba(0, 178, 255, 0.05));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      &:hover {
+        background: white !important;
+        color: #00B2FF !important;
+        transform: scale(1.12);
+        box-shadow: 0 4px 16px rgba(0, 178, 255, 0.25),
+                    inset 0 0 20px rgba(0, 178, 255, 0.05);
+
+        &::before {
+          opacity: 1;
+        }
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  // Control de geolocalización con efectos premium
+  .custom-geolocation-control {
+    box-shadow: 0 8px 32px rgba(0, 178, 255, 0.35),
+                0 4px 12px rgba(0, 0, 0, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    border-radius: 50% !important;
+    overflow: visible;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    position: relative;
+
+    // Anillo pulsante externo
+    &::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: -8px;
+      right: -8px;
+      bottom: -8px;
+      border-radius: 50%;
+      background: rgba(0, 178, 255, 0.2);
+      animation: geoPulse 2s ease-out infinite;
+      z-index: -1;
+    }
+
+    a {
+      width: 56px !important;
+      height: 56px !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #00B2FF 0%, #00D9C0 100%) !important;
+      color: white !important;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+      border: none !important;
+      position: relative;
+
+      // Brillo interno
+      &::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent);
+      }
+
+      &:hover {
+        transform: scale(1.15);
+        box-shadow: 0 12px 40px rgba(0, 178, 255, 0.5),
+                    0 0 30px rgba(0, 217, 192, 0.4),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.4) !important;
+        background: linear-gradient(135deg, #00D9C0 0%, #00B2FF 100%) !important;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+
+      svg {
+        animation: geoGlow 2s ease-in-out infinite;
+        position: relative;
+        z-index: 1;
+      }
+    }
+  }
+
+  // Animación de pulso para geolocalización
+  @keyframes geoPulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.2);
+      opacity: 0;
+    }
+  }
+
+  // Animación de brillo para icono
+  @keyframes geoGlow {
+    0%, 100% {
+      filter: drop-shadow(0 0 2px white);
+    }
+    50% {
+      filter: drop-shadow(0 0 8px white);
+    }
+  }
+
+  // Control de escala WAZE
+  .leaflet-control-scale {
+    background: rgba(255, 255, 255, 0.98) !important;
+    border-radius: 10px !important;
+    padding: 5px 10px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 178, 255, 0.08) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 178, 255, 0.08) !important;
+
+    .leaflet-control-scale-line {
+      border: 2px solid #00B2FF !important;
+      border-top: none !important;
+      color: #616161 !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      background: white !important;
+      border-radius: 0 0 6px 6px !important;
+    }
+  }
+
+  // Atribución mejorada WAZE
+  .leaflet-control-attribution {
+    background: rgba(255, 255, 255, 0.95) !important;
+    font-size: 10px !important;
+    padding: 5px 10px !important;
+    border-radius: 10px !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    border: 1px solid rgba(0, 178, 255, 0.05) !important;
+
+    a {
+      color: #00B2FF !important;
+      font-weight: 500 !important;
+
+      &:hover {
+        color: #00D9C0 !important;
+      }
+    }
+
+  // ============================================
+  // TOOLTIP DE RUTA (TEXTO FLOTANTE)
+  // ============================================
+
+  .route-label-tooltip {
+    background: linear-gradient(135deg, rgba(0, 178, 255, 0.95), rgba(0, 217, 192, 0.95)) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4) !important;
+    color: white !important;
+    padding: 10px 20px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 32px rgba(0, 178, 255, 0.4),
+                0 4px 16px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                0 0 20px rgba(0, 217, 192, 0.3) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    pointer-events: none;
+    z-index: 1000 !important;
+    animation: tooltipAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    
+    // Brillo interno
+    &::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      right: 4px;
+      height: 40%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent);
+      border-radius: 16px 16px 0 0;
+      pointer-events: none;
+    }
+  }
+
+  .leaflet-tooltip-top::before,
+  .leaflet-tooltip-bottom::before,
+  .leaflet-tooltip-left::before,
+  .leaflet-tooltip-right::before {
+    border: none !important; // Ocultar la flecha por defecto del tooltip
+  }
+  }
+
+  // ============================================
+  // RUTAS CON EFECTOS PREMIUM DE SIGUIENTE NIVEL
+  // ============================================
+
+  // Sombra externa (profundidad)
+  .route-outer-shadow {
+    pointer-events: none;
+    z-index: 3 !important;
+    opacity: 0.08;
+  }
+
+  // Sombra principal
+  .route-shadow {
+    pointer-events: none;
+    z-index: 4 !important;
+    opacity: 0.2;
+  }
+
+  // Línea base (fondo oscuro)
+  .route-base {
+    pointer-events: none;
+    z-index: 5 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+  }
+
+  // Línea de ruta principal con efectos de élite
+  .route-line {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25)) 
+            drop-shadow(0 0 4px currentColor);
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+    z-index: 6 !important;
+    cursor: pointer;
+    paint-order: stroke fill markers;
+    
+    // Efecto de brillo sutil por defecto
+    opacity: 0.92;
+
+    &:hover {
+      filter: drop-shadow(0 4px 16px rgba(0, 178, 255, 0.5)) 
+              drop-shadow(0 0 12px currentColor)
+              drop-shadow(0 0 20px currentColor);
+      stroke-width: 7 !important;
+      z-index: 100 !important;
+      opacity: 1;
+      animation: routeGlow 1.5s ease-in-out infinite;
+    }
+
+    &:active {
+      filter: drop-shadow(0 6px 24px rgba(0, 178, 255, 0.6)) 
+              drop-shadow(0 0 16px currentColor)
+              drop-shadow(0 0 28px currentColor);
+      transform: scale(1.02);
+    }
+  }
+
+  // Animación de resplandor para hover
+  @keyframes routeGlow {
+    0%, 100% {
+      filter: drop-shadow(0 4px 16px rgba(0, 178, 255, 0.5)) 
+              drop-shadow(0 0 12px currentColor)
+              drop-shadow(0 0 20px currentColor);
+    }
+    50% {
+      filter: drop-shadow(0 4px 20px rgba(0, 178, 255, 0.7)) 
+              drop-shadow(0 0 16px currentColor)
+              drop-shadow(0 0 32px currentColor);
+    }
+  }
+
+  // Marker de ubicación del usuario
+  .user-location-marker {
+    animation: markerPulse 2s ease-in-out infinite;
+  }
+
+  .user-location-pulse {
+    animation: markerPulse 2s ease-in-out infinite;
+  }
+
+  // ============================================
+  // RESPONSIVE
+  // ============================================
+
+  @media (max-width: 768px) {
+    .premium-popup {
+      min-width: 260px;
+
+      .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+
+        .info-card:last-child {
+          grid-column: 1 / -1;
+        }
+      }
+
+      .popup-actions {
+        flex-direction: column;
+      }
+    }
+
+    .leaflet-control-zoom a,
+    .custom-geolocation-control a {
+      width: 40px !important;
+      height: 40px !important;
+      line-height: 40px !important;
+    }
+  }
+
+  // ============================================
+  // TOOLTIP DE RUTA (TEXTO FLOTANTE)
+  // ============================================
+
+  .route-label-tooltip {
+    background: linear-gradient(135deg, rgba(0, 178, 255, 0.95), rgba(0, 217, 192, 0.95)) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 2px solid rgba(255, 255, 255, 0.4) !important;
+    color: white !important;
+    padding: 10px 20px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 8px 32px rgba(0, 178, 255, 0.4),
+                0 4px 16px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                0 0 20px rgba(0, 217, 192, 0.3) !important;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    white-space: nowrap !important;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    pointer-events: none;
+    z-index: 1000 !important;
+    animation: tooltipAppear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    
+    // Brillo interno
+    &::before {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      right: 4px;
+      height: 40%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), transparent);
+      border-radius: 16px 16px 0 0;
+      pointer-events: none;
+    }
+  }
+
+  .leaflet-tooltip-top::before,
+  .leaflet-tooltip-bottom::before,
+  .leaflet-tooltip-left::before,
+  .leaflet-tooltip-right::before {
+    border: none !important; // Ocultar la flecha por defecto del tooltip
+  }
+}
+
+// ============================================
+// ============================================
+// BOTONES FLOTANTES
+// ============================================
+
+// Botón de Snap to Road
+.snap-road-toggle {
+  position: absolute;
+  bottom: 180px; // Encima del botón de buses
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  background: white;
+  border: 2px solid #E0E0E0;
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  z-index: 1000;
+  color: #757575;
+
+  svg {
+    transition: all var(--transition-base);
+  }
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    border-color: #4285f4;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  // Estado ACTIVO (Snap to Road encendido)
+  &.active {
+    background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+    border-color: #4285f4;
+    box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
+    color: white;
+
+    &:hover {
+      box-shadow: 0 8px 24px rgba(66, 133, 244, 0.5);
+    }
+  }
+
+  // Estado PROCESANDO (ajustando ubicación)
+  &.snapping {
+    animation: snapPulse 1.5s ease-in-out infinite;
+  }
+
+  .snap-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background: #ffa726;
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(255, 167, 38, 0.4);
+    animation: snapBadgePulse 0.8s ease-in-out infinite;
+  }
+}
+
+@keyframes snapPulse {
+  0%, 100% {
+    box-shadow: 0 6px 20px rgba(66, 133, 244, 0.4);
+  }
+  50% {
+    box-shadow: 0 6px 30px rgba(66, 133, 244, 0.7);
+  }
+}
+
+@keyframes snapBadgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+// Botón del Panel de Buses
+.bus-panel-toggle {
+  position: absolute;
+  bottom: 100px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #00B2FF 0%, #00D9C0 100%);
+  border: none;
+  border-radius: var(--radius-full);
+  box-shadow: 0 6px 20px rgba(0, 178, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  z-index: 1000;
+
+  svg {
+    color: white;
+  }
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 28px rgba(0, 178, 255, 0.5), 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #00D9C0 0%, #00B2FF 100%);
+  }
+
+  .bus-count-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    min-width: 24px;
+    height: 24px;
+    background: #FF4444;
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    box-shadow: 0 3px 8px rgba(255, 68, 68, 0.4);
+    animation: badgePulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+// ============================================
+// PANEL DE INFORMACIÓN DE BUSES
+// ============================================
+
+.bus-info-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 380px;
+  max-height: calc(100vh - 140px);
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 178, 255, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .panel-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+    border-bottom: 1px solid rgba(0, 178, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .panel-title {
+      h3 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #212121;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.75rem;
+        color: #9E9E9E;
+        font-weight: 500;
+      }
+    }
+
+    .panel-close-btn {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      background: rgba(0, 178, 255, 0.1);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-fast);
+      color: #616161;
+
+      &:hover {
+        background: rgba(0, 178, 255, 0.2);
+        color: #00B2FF;
+        transform: scale(1.05);
+      }
+    }
+  }
+
+  .panel-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: white;
+    border-bottom: 1px solid #F5F5F5;
+
+    .stat-card {
+      padding: 1rem;
+      background: #FAFAFA;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all var(--transition-fast);
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      }
+
+      &.active {
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid rgba(76, 175, 80, 0.2);
+      }
+
+      &.completed {
+        background: rgba(0, 178, 255, 0.1);
+        border: 1px solid rgba(0, 178, 255, 0.2);
+      }
+
+      .stat-icon {
+        font-size: 1.75rem;
+      }
+
+      .stat-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+
+        .stat-label {
+          font-size: 0.6875rem;
+          color: #9E9E9E;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #212121;
+        }
+      }
+    }
+  }
+
+  .bus-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background: #FAFAFA;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #E0E0E0;
+      border-radius: 3px;
+
+      &:hover {
+        background: #BDBDBD;
+      }
+    }
+  }
+
+  .empty-bus-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+
+    .empty-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.4;
+    }
+
+    p {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: #616161;
+      margin-bottom: 0.5rem;
+    }
+
+    small {
+      font-size: 0.8125rem;
+      color: #9E9E9E;
+    }
+  }
+}
+
+// ============================================
+// TARJETAS DE BUSES
+// ============================================
+
+.bus-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 0.875rem;
+  transition: all var(--transition-base);
+  animation: busCardAppear 0.4s ease-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 178, 255, 0.12);
+  }
+
+  &.inactive {
+    opacity: 0.5;
+  }
+
+  .bus-route-color {
+    width: 4px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .bus-info {
+    flex: 1;
+    min-width: 0;
+
+    .bus-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+
+      .bus-id {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #212121;
+      }
+
+      .bus-route {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.625rem;
+        background: rgba(0, 178, 255, 0.1);
+        border-radius: var(--radius-sm);
+      }
+    }
+
+    .bus-progress-container {
+      margin-bottom: 0.75rem;
+
+      .progress-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.375rem;
+
+        .progress-label {
+          font-size: 0.6875rem;
+          color: #9E9E9E;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .progress-value {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: #212121;
+        }
+      }
+
+      .progress-bar-bg {
+        height: 6px;
+        background: #E0E0E0;
+        border-radius: var(--radius-full);
+        overflow: hidden;
+
+        .progress-bar-fill {
+          height: 100%;
+          border-radius: var(--radius-full);
+          transition: width 0.5s ease-out;
+          box-shadow: 0 0 8px currentColor;
+        }
+      }
+    }
+
+    .bus-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+
+      .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.625rem;
+        background: #F5F5F5;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        color: #616161;
+        font-weight: 500;
+
+        svg {
+          flex-shrink: 0;
+          stroke-width: 2.5;
+        }
+
+        &.occupancy {
+          .occupancy-icon {
+            font-size: 1rem;
+          }
+        }
+
+        &.next-stop {
+          flex: 1;
+          min-width: 0;
+
+          span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+
+    .bus-eta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      background: rgba(0, 178, 255, 0.08);
+      border-radius: var(--radius-sm);
+      font-size: 0.75rem;
+      color: #00B2FF;
+      font-weight: 600;
+
+      svg {
+        flex-shrink: 0;
+      }
+    }
+  }
+}
+
+@keyframes busCardAppear {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// ============================================
+// RESPONSIVE
+// ============================================
+
+@media (max-width: 768px) {
+  .snap-road-toggle {
+    bottom: 150px;
+    right: 15px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .bus-panel-toggle {
+    bottom: 80px;
+    right: 15px;
+    width: 54px;
+    height: 54px;
+  }
+
+  .bus-info-panel {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-height: calc(100vh - 100px);
+
+    .panel-header {
+      padding: 1.25rem;
+    }
+
+    .panel-stats {
+      padding: 0.875rem 1.25rem;
+
+      .stat-card {
+        padding: 0.875rem;
+
+        .stat-info .stat-value {
+          font-size: 1.25rem;
+        }
+      }
+    }
+
+    .bus-list {
+      padding: 0.875rem;
+    }
+
+    .bus-card {
+      padding: 0.875rem;
+    }
+  }
+}
+
+// ============================================
+// UBICACIÓN DEL USUARIO (PERSISTENTE)
+// ============================================
+
+// Marker de ubicación del usuario (MEJORADO)
+::ng-deep .user-location-marker.persistent {
+  z-index: 1000 !important;
+  
+  path {
+    filter: drop-shadow(0 4px 12px rgba(66, 133, 244, 0.6))
+            drop-shadow(0 0 20px rgba(66, 133, 244, 0.4));
+  }
+}
+
+// Círculo interno del GPS (efecto 3D)
+::ng-deep .user-location-inner {
+  z-index: 1001 !important;
+  pointer-events: none;
+}
+
+// Círculo de precisión
+::ng-deep .user-location-accuracy {
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+// Pulso animado persistente
+::ng-deep .user-location-pulse.persistent {
+  animation: userLocationPulse 2s ease-out infinite;
+  z-index: 999 !important;
+}
+
+@keyframes userLocationPulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.5);
+  }
+}
+
+// ============================================
+// BOTÓN DE SUGERENCIA DE RUTAS
+// ============================================
+
+.route-suggestion-toggle {
+  position: absolute;
+  bottom: 100px; // Esquina inferior derecha, arriba de los controles del mapa
+  right: 20px;
+  z-index: 1000;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 24px; // Más redondeado
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.35), 
+              0 4px 12px rgba(0, 0, 0, 0.15),
+              inset 0 1px 0 rgba(255, 255, 255, 0.2); // Sutil brillo interno
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  font-size: 1rem;
+  font-weight: 700;
+  backdrop-filter: blur(12px);
+  position: relative;
+  overflow: hidden;
+
+  // Efecto de brillo animado
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.15) 50%,
+      transparent 70%
+    );
+    transform: rotate(45deg);
+    animation: shimmer 3s infinite;
+  }
+
+  svg {
+    stroke: white;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  }
+
+  .button-label {
+    white-space: nowrap;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.3px;
+  }
+
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.45),
+                0 6px 16px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  &:active {
+    transform: translateY(-2px) scale(0.98);
+    transition: all 0.1s;
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    box-shadow: 0 12px 32px rgba(118, 75, 162, 0.5),
+                0 6px 16px rgba(0, 0, 0, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    
+    // Pulso sutil cuando está activo
+    animation: activePulse 2s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+@keyframes activePulse {
+  0%, 100% {
+    box-shadow: 0 12px 32px rgba(118, 75, 162, 0.5),
+                0 6px 16px rgba(0, 0, 0, 0.2),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+  50% {
+    box-shadow: 0 12px 40px rgba(118, 75, 162, 0.6),
+                0 6px 20px rgba(0, 0, 0, 0.25),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+}
+
+// ============================================
+// PANEL LATERAL DE SUGERENCIA DE RUTAS
+// ============================================
+
+.side-panel {
+  position: absolute;
+  top: 0;
+  right: 0; // Desde la derecha
+  bottom: 0;
+  width: 440px; // Un poco más ancho
+  background: white;
+  z-index: 999;
+  box-shadow: -4px 0 32px rgba(0, 0, 0, 0.15),
+              -2px 0 16px rgba(0, 0, 0, 0.08); // Sombra más pronunciada desde la derecha
+  animation: slideInFromRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  
+  // Borde sutil izquierdo
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  
+  // Backdrop blur para efecto glassmorphism
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.98) 100%
+    );
+    backdrop-filter: blur(8px);
+    z-index: -1;
+  }
+}
+
+.route-suggestion-side-panel {
+  // Estilos específicos para el panel de sugerencia de rutas
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  // Animación de entrada más suave
+  animation: fadeIn 0.4s ease-out 0.1s both;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Overlay oscuro detrás del panel (opcional, para mejor UX)
+.panel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 998;
+  animation: fadeInOverlay 0.3s ease-out;
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+}
+
+@keyframes fadeInOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+// Responsive: En pantallas pequeñas, el panel ocupa más ancho
+@media (max-width: 1024px) {
+  .side-panel {
+    width: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .side-panel {
+    width: 100%;
+    max-width: 90%;
+  }
+
+  .route-suggestion-toggle {
+    bottom: 80px;
+    right: 15px;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.9375rem;
+    border-radius: 20px;
+
+    .button-label {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .side-panel {
+    width: 100%;
+  }
+
+  .route-suggestion-toggle {
+    bottom: 70px;
+    right: 10px;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    gap: 0.5rem;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .button-label {
+      display: none; // Ocultar texto en móviles muy pequeños
+    }
+
+    // Mostrar solo el ícono en forma de FAB
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+// ========================================
+// ESTILOS PARA MARCADORES DE NAVEGACIÓN
+// ========================================
+
+// Marcador de destino (rojo)
+::ng-deep .destination-marker {
+  .destination-marker-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .destination-marker-pin {
+    width: 40px;
+    height: 40px;
+    border-radius: 50% 50% 50% 0;
+    background: #e74c3c;
+    transform: rotate(-45deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+    animation: bounce-marker 0.6s ease-out;
+
+    svg {
+      transform: rotate(45deg);
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    }
+  }
+
+  .destination-marker-shadow {
+    position: absolute;
+    bottom: -8px;
+    width: 20px;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+    filter: blur(4px);
+  }
+}
+
+// Marcadores de paradas (boarding y alighting)
+::ng-deep .custom-stop-marker {
+  .boarding-stop-marker,
+  .alighting-stop-marker {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+    border: 3px solid white;
+    animation: bounce-marker 0.5s ease-out;
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.15);
+    }
+  }
+}
+
+// Animación de rebote para marcadores
+@keyframes bounce-marker {
+  0% {
+    transform: translateY(-50px) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(5px) scale(1.1);
+  }
+  70% {
+    transform: translateY(-3px) scale(0.95);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+// Estilos para popups de Leaflet
+::ng-deep .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+::ng-deep .leaflet-popup-content {
+  margin: 8px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+
+  strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #2c3e50;
+  }
+}

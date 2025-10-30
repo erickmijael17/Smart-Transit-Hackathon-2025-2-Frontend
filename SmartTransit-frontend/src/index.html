@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SmartTransit</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <!-- Polyfills para SockJS y WebSocket -->
+  <script>
+    // Polyfill para 'global' (requerido por SockJS)
+    window.global = window;
+    
+    // Polyfill para 'process' (requerido por algunas librerías Node.js)
+    window.process = window.process || { env: {} };
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

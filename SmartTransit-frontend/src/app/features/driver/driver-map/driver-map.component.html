@@ -1,0 +1,23 @@
+<div class="driver-map-container">
+  <!-- Estado de carga -->
+  @if (loading()) {
+    <div class="map-loading">
+      <div class="spinner"></div>
+      <p>Cargando tu ruta...</p>
+    </div>
+  }
+
+  <!-- Estado de error -->
+  @if (error()) {
+    <div class="map-error">
+      <div class="error-icon">⚠️</div>
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  <!-- Mapa de Leaflet -->
+  <div id="driver-map" class="leaflet-map"></div>
+</div>
+
+
+

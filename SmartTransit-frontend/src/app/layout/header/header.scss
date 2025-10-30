@@ -1,0 +1,229 @@
+:host {
+  display: block;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  background: white;
+  box-shadow: 0 1px 0 #EEEEEE;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 1.25rem;
+  background: white;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+// Botón de menú hamburguesa estilo WAZE
+.burger-btn {
+  width: 40px;
+  height: 40px;
+  background: #F5F5F5;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  color: #212121;
+
+  &:hover {
+    background: #EEEEEE;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    stroke-width: 2.5;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Info de la página estilo WAZE
+.page-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+
+  .page-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #212121;
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  .page-subtitle {
+    font-size: 0.6875rem;
+    color: #9E9E9E;
+    font-weight: 500;
+  }
+}
+
+// Botón de ubicación (estilo WAZE puro)
+.location-btn {
+  width: 40px;
+  height: 40px;
+  background: #00B2FF;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 178, 255, 0.35);
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 178, 255, 0.45);
+    background: #00D9C0;
+  }
+
+  &:active {
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Botones de acción estilo WAZE
+.icon-btn {
+  width: 40px;
+  height: 40px;
+  background: #F5F5F5;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  color: #616161;
+  position: relative;
+
+  &:hover {
+    background: #EEEEEE;
+    color: #212121;
+  }
+
+  svg {
+    stroke-width: 2;
+    width: 20px;
+    height: 20px;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background: #FF4444;
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: 0.625rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(255, 68, 68, 0.4);
+  }
+}
+
+// Menú de usuario estilo WAZE
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.25rem 0.625rem 0.25rem 0.25rem;
+  background: #F5F5F5;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: #EEEEEE;
+  }
+
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    border: 2px solid white;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.0625rem;
+
+    .user-name {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #212121;
+      line-height: 1.2;
+    }
+
+    .user-role {
+      font-size: 0.6875rem;
+      color: #9E9E9E;
+      font-weight: 500;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .header-container {
+    padding: 0 1rem;
+    height: 64px;
+  }
+
+  .page-info .page-subtitle {
+    display: none;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .user-menu {
+    padding: 0.375rem;
+  }
+}
+
+// Desktop: ocultar botón de menú en pantallas grandes
+@media (min-width: 1024px) {
+  .burger-btn {
+    display: none;
+  }
+}

@@ -1,0 +1,43 @@
+<aside class="sidebar" [class.active]="layoutService.isSidebarOpen()">
+  <!-- Header del sidebar -->
+  <header class="sidebar-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M16 3h5v5"></path>
+          <path d="M8 3H3v5"></path>
+          <path d="M12 19v-6"></path>
+          <path d="M18 10l-4 4-4-4"></path>
+          <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <div class="brand-name">SmartTransit</div>
+        <div class="brand-subtitle">Juliaca</div>
+      </div>
+    </div>
+    <button 
+      class="close-btn" 
+      (click)="layoutService.toggleSidebar()" 
+      aria-label="Cerrar menú"
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Contenido principal: Lista de rutas -->
+  <div class="sidebar-content">
+    <app-route-list></app-route-list>
+  </div>
+</aside>
+
+<!-- Overlay para cerrar el sidebar en mobile -->
+<div 
+  (click)="layoutService.toggleSidebar()" 
+  class="sidebar-overlay" 
+  [class.active]="layoutService.isSidebarOpen()" 
+  aria-hidden="true"
+></div>

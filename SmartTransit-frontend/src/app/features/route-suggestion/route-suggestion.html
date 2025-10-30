@@ -1,0 +1,527 @@
+<!-- Contenedor principal del panel de sugerencia de rutas -->
+<div class="route-suggestion-panel">
+  
+  <!-- Header del panel -->
+  <div class="panel-header">
+    <div class="header-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="10" r="3"/>
+        <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z"/>
+      </svg>
+    </div>
+    <div class="header-content">
+      <h2>¿A dónde vas?</h2>
+      <p>Te ayudamos a encontrar tu ruta</p>
+    </div>
+  </div>
+
+  <!-- Formulario de búsqueda -->
+  <div class="search-section">
+    
+    <!-- Origen (mi ubicación) -->
+    <div class="location-input origin-input">
+      <div class="input-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <div class="input-content">
+        @if (userLocation()) {
+          <div class="location-label">Tu ubicación</div>
+          <div class="location-value">
+            📍 {{ userLocation()!.latitude.toFixed(6) }}, {{ userLocation()!.longitude.toFixed(6) }}
+          </div>
+        } @else {
+          <div class="location-label">Obteniendo ubicación...</div>
+          <div class="location-value loading-text">
+            <span class="pulse-dot"></span> GPS...
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Línea conectora -->
+    <div class="route-connector">
+      <div class="connector-line"></div>
+      <div class="connector-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+
+    <!-- Destino (búsqueda) -->
+    <form (ngSubmit)="onSearchSubmit()" class="search-form">
+      <div class="location-input destination-input">
+        <div class="input-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+        </div>
+        <input 
+          type="text" 
+          [(ngModel)]="destinationInput"
+          name="destination"
+          placeholder="¿A dónde quieres ir?"
+          class="destination-search-input"
+          [disabled]="!userLocation()">
+        @if (destinationInput) {
+          <button type="button" class="clear-btn" (click)="clearSearch()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        }
+      </div>
+
+      <!-- Botón de búsqueda -->
+      <button 
+        type="submit" 
+        class="search-btn"
+        [disabled]="!destinationInput || !userLocation() || searchState() === SearchState.SEARCHING">
+        @if (searchState() === SearchState.SEARCHING) {
+          <span class="spinner-small"></span>
+          <span>Buscando...</span>
+        } @else {
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <span>Buscar Rutas</span>
+        }
+      </button>
+    </form>
+  </div>
+
+  <!-- Mensaje de error -->
+  @if (errorMessage()) {
+    <div class="error-banner">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span>{{ errorMessage() }}</span>
+    </div>
+  }
+
+  <!-- Contenido principal -->
+  <div class="panel-content">
+    
+    <!-- Estado: Idle (sin búsqueda) -->
+    @if (searchState() === SearchState.IDLE) {
+      <div class="idle-state">
+        <!-- Ilustración SVG Premium -->
+        <div class="idle-illustration">
+          <svg width="180" height="180" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="busGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <rect x="20" y="140" width="160" height="40" rx="5" fill="#e9ecef"/>
+            <rect x="30" y="157" width="30" height="6" rx="3" fill="white" opacity="0.3"/>
+            <rect x="70" y="157" width="30" height="6" rx="3" fill="white" opacity="0.3"/>
+            <g class="bus-moving">
+              <rect x="60" y="90" width="80" height="50" rx="8" fill="url(#busGradient)"/>
+              <rect x="65" y="95" width="30" height="25" rx="3" fill="rgba(255,255,255,0.3)"/>
+              <rect x="105" y="95" width="30" height="25" rx="3" fill="rgba(255,255,255,0.3)"/>
+              <circle cx="75" cy="145" r="8" fill="#2c3e50"/>
+              <circle cx="125" cy="145" r="8" fill="#2c3e50"/>
+            </g>
+            <g transform="translate(150, 50)">
+              <circle cx="0" cy="0" r="20" fill="#e74c3c" opacity="0.2"/>
+              <path d="M0,-15 C-8,-15 -15,-8 -15,0 C-15,8 0,20 0,20 C0,20 15,8 15,0 C15,-8 8,-15 0,-15 Z" fill="#e74c3c"/>
+              <circle cx="0" cy="0" r="5" fill="white"/>
+            </g>
+          </svg>
+        </div>
+        
+        <h3>Encuentra tu ruta perfecta</h3>
+        <p>Ingresa tu destino y te mostraremos las mejores opciones</p>
+        
+        <div class="quick-tips">
+          <div class="tip-item premium">
+            <div class="tip-icon-wrapper">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                <path d="M2 17l10 5 10-5"/>
+              </svg>
+            </div>
+            <div class="tip-content">
+              <h4>GPS Preciso</h4>
+              <p>Ubicación en tiempo real</p>
+            </div>
+          </div>
+          <div class="tip-item premium">
+            <div class="tip-icon-wrapper">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div class="tip-content">
+              <h4>Tiempo Real</h4>
+              <p>Tráfico actualizado</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Buscando con Skeleton Loaders -->
+    @if (searchState() === SearchState.SEARCHING) {
+      <div class="searching-state">
+        <div class="search-animation-wrapper">
+          <div class="ripple-container">
+            <div class="ripple"></div>
+            <div class="ripple"></div>
+            <div class="ripple"></div>
+          </div>
+          <div class="bus-loader-premium">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+              <rect x="5" y="11" width="14" height="12" rx="2" ry="2"/>
+              <path d="M5 11V6a2 2 0 012-2h10a2 2 0 012 2v5"/>
+              <circle cx="9" cy="19" r="1"/>
+              <circle cx="15" cy="19" r="1"/>
+            </svg>
+          </div>
+        </div>
+        
+        <h3>Encontrando las mejores rutas</h3>
+        <p>Analizando millones de combinaciones...</p>
+        
+        <!-- Skeleton Cards -->
+        <div class="skeleton-list">
+          <div class="skeleton-card">
+            <div class="skeleton-header">
+              <div class="skeleton-badge"></div>
+              <div class="skeleton-text short"></div>
+              <div class="skeleton-score"></div>
+            </div>
+            <div class="skeleton-body">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line short"></div>
+            </div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-header">
+              <div class="skeleton-badge"></div>
+              <div class="skeleton-text short"></div>
+              <div class="skeleton-score"></div>
+            </div>
+            <div class="skeleton-body">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line short"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Estado: Sin resultados -->
+    @if (searchState() === SearchState.NO_RESULTS) {
+      <div class="no-results-state">
+        <div class="no-results-illustration">
+          <svg width="160" height="160" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="100" cy="100" r="80" fill="#f8f9fa"/>
+            <path d="M70 90 Q100 70 130 90" stroke="#dee2e6" stroke-width="4" stroke-linecap="round"/>
+            <circle cx="75" cy="85" r="8" fill="#adb5bd"/>
+            <circle cx="125" cy="85" r="8" fill="#adb5bd"/>
+            <path d="M60 140 L140 140" stroke="#dee2e6" stroke-width="6" stroke-linecap="round"/>
+            <g opacity="0.3">
+              <circle cx="100" cy="100" r="90" stroke="#667eea" stroke-width="2" stroke-dasharray="5,5"/>
+            </g>
+          </svg>
+        </div>
+        <h3>No encontramos rutas disponibles</h3>
+        <p>No hay rutas de bus para este destino en este momento</p>
+        
+        <div class="suggestions-box">
+          <h4>Intenta con:</h4>
+          <ul>
+            <li>Verificar que tu ubicación GPS esté activa</li>
+            <li>Buscar un destino más específico</li>
+            <li>Intentar con lugares cercanos conocidos</li>
+          </ul>
+        </div>
+        
+        <button class="retry-btn" (click)="clearSearch()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+          </svg>
+          <span>Buscar otra ruta</span>
+        </button>
+      </div>
+    }
+
+    <!-- Estado: Resultados (lista de sugerencias) -->
+    @if (searchState() === SearchState.SUCCESS && !selectedSuggestion()) {
+      <div class="suggestions-list">
+        <div class="list-header">
+          <h3>Rutas sugeridas</h3>
+          <span class="results-count">{{ suggestions().length }} opciones</span>
+        </div>
+
+        @for (suggestion of suggestions(); track suggestion.routeId; let i = $index) {
+          <div class="suggestion-card premium" 
+               (click)="selectSuggestion(suggestion)"
+               [class.top-match]="i === 0"
+               [style.animation-delay]="(i * 0.1) + 's'">
+            <!-- Badge de mejor opción -->
+            @if (i === 0) {
+              <div class="best-match-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                <span>Mejor opción</span>
+              </div>
+            }
+            
+            <!-- Línea de color de la ruta con glow -->
+            <div class="route-color-bar" 
+                 [style.background]="suggestion.routeColor || '#667eea'"
+                 [style.box-shadow]="'0 0 20px ' + (suggestion.routeColor || '#667eea') + '40'"></div>
+            
+            <!-- Contenido de la sugerencia -->
+            <div class="suggestion-content">
+              <!-- Header de la ruta -->
+              <div class="suggestion-header">
+                <div class="route-info">
+                  <div class="route-badge" [style.background]="suggestion.routeColor">
+                    {{ suggestion.routeId }}
+                  </div>
+                  <div class="route-name">{{ suggestion.routeName }}</div>
+                </div>
+                <div class="score-badge" [ngClass]="getScoreClass(suggestion.score)">
+                  {{ suggestion.score }}%
+                </div>
+              </div>
+
+              <!-- Ruta visual simplificada -->
+              <div class="route-visual">
+                <div class="route-step">
+                  <div class="route-dot start-dot"></div>
+                  <div class="route-label">Tu ubicación</div>
+                </div>
+                
+                <div class="route-connector-line">
+                  <div class="walking-indicator">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                    </svg>
+                    <span class="walk-time">{{ formatTime(suggestion.walkingTimeToStop) }}</span>
+                  </div>
+                </div>
+                
+                @if (suggestion.boardingStop) {
+                  <div class="route-step">
+                    <div class="route-dot stop-dot" [style.background]="suggestion.routeColor"></div>
+                    <div class="route-label">
+                      <strong>{{ suggestion.boardingStop.name }}</strong>
+                      <span class="distance-badge">🚶 {{ formatDistance(suggestion.walkingDistanceToStop) }}</span>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="route-step">
+                    <div class="route-dot stop-dot error">⚠️</div>
+                    <div class="route-label">Parada no disponible</div>
+                  </div>
+                }
+                
+                <div class="route-connector-line bus-line">
+                  <div class="bus-indicator" [style.background]="suggestion.routeColor">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="none">
+                      <rect x="5" y="11" width="14" height="12" rx="2"/>
+                      <path d="M5 11V6a2 2 0 012-2h10a2 2 0 012 2v5"/>
+                    </svg>
+                    <span class="bus-time">{{ formatTime(suggestion.estimatedTravelTime) }}</span>
+                    <span class="bus-stops">{{ suggestion.numberOfStops || 0 }} paradas</span>
+                  </div>
+                </div>
+
+                @if (suggestion.alightingStop) {
+                  <div class="route-step">
+                    <div class="route-dot stop-dot" [style.background]="suggestion.routeColor"></div>
+                    <div class="route-label">
+                      <strong>{{ suggestion.alightingStop.name }}</strong>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="route-step">
+                    <div class="route-dot stop-dot error">⚠️</div>
+                    <div class="route-label">Parada no disponible</div>
+                  </div>
+                }
+                
+                @if (suggestion.alightingStop) {
+                  <div class="route-connector-line">
+                    <div class="walking-indicator">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                      </svg>
+                      <span class="walk-time">~2 min</span>
+                    </div>
+                  </div>
+                }
+                
+                <div class="route-step">
+                  <div class="route-dot end-dot"></div>
+                  <div class="route-label">🎯 Tu destino</div>
+                </div>
+              </div>
+
+              <!-- Resumen rápido estilo Waze -->
+              <div class="journey-summary-quick">
+                <div class="summary-time">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <span class="time-value">{{ formatTime(suggestion.totalTripTime) }}</span>
+                </div>
+                <div class="summary-details">
+                  <span class="detail-item">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                      <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    {{ suggestion.numberOfStops }} paradas
+                  </span>
+                  <span class="divider">•</span>
+                  <span class="detail-item">
+                    🚶 {{ formatDistance(suggestion.walkingDistanceToStop) }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Indicador de recomendación -->
+              @if (suggestion.directions) {
+                <div class="recommendation-badge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  <span>{{ suggestion.directions }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Icono de flecha -->
+            <div class="suggestion-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Estado: Detalle de sugerencia seleccionada -->
+    @if (selectedSuggestion()) {
+      <div class="suggestion-detail">
+        <!-- Header del detalle -->
+        <div class="detail-header">
+          <button class="back-btn" (click)="backToList()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <div class="detail-title">
+            <div class="route-badge-large" [style.background]="selectedSuggestion()!.routeColor">
+              {{ selectedSuggestion()!.routeId }}
+            </div>
+            <div>
+              <h3>{{ selectedSuggestion()!.routeName }}</h3>
+              <p>Detalles del viaje</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Indicaciones paso a paso -->
+        <div class="journey-steps">
+          <div class="step-item">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h4>Camina hasta la parada</h4>
+              <p>
+                {{ getWalkingIcon(selectedSuggestion()!.walkingDistanceToStop) }}
+                {{ formatDistance(selectedSuggestion()!.walkingDistanceToStop) }} •
+                {{ formatTime(selectedSuggestion()!.walkingTimeToStop) }}
+              </p>
+              @if (selectedSuggestion()!.boardingStop) {
+                <div class="step-location">
+                  📍 {{ selectedSuggestion()!.boardingStop.name }}
+                </div>
+              } @else {
+                <div class="step-location">
+                  ⚠️ Parada no disponible
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h4>Sube al bus</h4>
+              <p>
+                Línea {{ selectedSuggestion()!.routeId }} - {{ selectedSuggestion()!.routeName }}
+              </p>
+              <div class="step-info">
+                🚏 {{ selectedSuggestion()!.numberOfStops }} paradas • 
+                🕐 {{ formatTime(selectedSuggestion()!.estimatedTravelTime) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="step-item">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h4>Baja en tu destino</h4>
+              @if (selectedSuggestion()!.alightingStop) {
+                <div class="step-location">
+                  🏁 {{ selectedSuggestion()!.alightingStop.name }}
+                </div>
+              } @else {
+                <div class="step-location">
+                  ⚠️ Parada no disponible
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen del viaje -->
+        <div class="journey-summary">
+          <div class="summary-item">
+            <div class="summary-label">Tiempo total</div>
+            <div class="summary-value">{{ formatTime(selectedSuggestion()!.totalTripTime) }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Puntuación</div>
+            <div class="summary-value" [ngClass]="getScoreClass(selectedSuggestion()!.score)">
+              {{ selectedSuggestion()!.score }}%
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón de acción -->
+        <button class="start-journey-btn" [style.background]="selectedSuggestion()!.routeColor" (click)="viewOnMap()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+            <circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span>Ver en el mapa</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

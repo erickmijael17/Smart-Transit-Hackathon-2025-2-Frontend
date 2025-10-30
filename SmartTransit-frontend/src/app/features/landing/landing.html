@@ -1,0 +1,76 @@
+<div class="landing-container">
+  <div class="landing-header">
+    <div class="brand-icon">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M16 3h5v5"></path>
+        <path d="M8 3H3v5"></path>
+        <path d="M12 19v-6"></path>
+        <path d="M18 10l-4 4-4-4"></path>
+        <circle cx="12" cy="12" r="10"></circle>
+      </svg>
+    </div>
+    <h1>Bienvenido a SmartTransit</h1>
+    <p>Tu compañero de viaje en Juliaca. Selecciona tu modo de acceso.</p>
+  </div>
+
+  <div class="role-selection">
+    <!-- Opción Pasajero -->
+    <a class="role-card passenger" routerLink="/map">
+      <div class="card-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+          <circle cx="12" cy="10" r="3"/>
+        </svg>
+      </div>
+      <div class="card-info">
+        <h2>Modo Pasajero</h2>
+        <p>Explora rutas, paradas y sigue los buses en tiempo real.</p>
+      </div>
+    </a>
+
+    <!-- Opción Conductor -->
+    <a class="role-card driver" (click)="onDriverModeClick()">
+      <div class="card-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0-6 0" />
+          <path d="M12 12m-8 0a8 8 0 1 0 16 0a8 8 0 1 0-16 0" />
+          <path d="M3.25 9l17.5 0" />
+          <path d="M3.25 15l17.5 0" />
+          <path d="M9 3.25l0 17.5" />
+          <path d="M15 3.25l0 17.5" />
+        </svg>
+      </div>
+      <div class="card-info">
+        <h2>Modo Conductor</h2>
+        <p>Inicia sesión para gestionar tu ruta y compartir tu ubicación en tiempo real.</p>
+      </div>
+    </a>
+
+    <!-- Opción Administrador -->
+    <a class="role-card admin" (click)="onAdminModeClick()">
+      <div class="card-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M12 2l9 4.5v5C21 17 16.5 21 12 22c-4.5-1-9-5-9-10.5v-5z"/>
+          <path d="M12 8v4"/>
+          <path d="M12 16h.01"/>
+        </svg>
+      </div>
+      <div class="card-info">
+        <h2>Panel Administrativo</h2>
+        <p>Gestiona rutas, buses, conductores y toda tu flota de transporte.</p>
+      </div>
+    </a>
+  </div>
+
+  <!-- Footer con enlace adicional -->
+  <div class="landing-footer">
+    <p class="footer-note">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+      ¿Eres dueño de una empresa de transporte? Accede al panel administrativo para gestionar tu flota.
+    </p>
+  </div>
+</div>

@@ -1,0 +1,434 @@
+.driver-map-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #f5f5f5;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-map {
+  width: 100%;
+  height: 100%;
+  min-height: 500px;
+}
+
+.map-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  z-index: 1000;
+  gap: 16px;
+
+  .spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  p {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+}
+
+.map-error {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fed7d7;
+  color: #c53030;
+  padding: 16px 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .error-icon {
+    font-size: 24px;
+  }
+
+  p {
+    margin: 0;
+    font-weight: 600;
+  }
+}
+
+// Estilos para marcadores de paradas (Inicio y Final)
+.driver-stop-marker {
+  background: none !important;
+  border: none !important;
+
+  &.start,
+  &.end {
+    background: transparent !important;
+  }
+}
+
+.stop-marker-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  &.start .stop-icon-large {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  }
+
+  &.end .stop-icon-large {
+    background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%);
+  }
+
+  .stop-icon-large {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 3px solid white;
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: scale(1.15);
+    }
+  }
+
+  .stop-label {
+    margin-top: 6px;
+    padding: 4px 10px;
+    background: white;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #2d3748;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    white-space: nowrap;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-30px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Estilos para popups
+:global(.driver-bus-popup) {
+  min-width: 200px;
+  
+  h3 {
+    margin: 0 0 12px;
+    font-size: 18px;
+    color: #1a202c;
+  }
+  
+  p {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #4a5568;
+    
+    strong {
+      color: #2d3748;
+    }
+  }
+}
+
+:global(.driver-stop-popup) {
+  padding: 8px;
+  min-width: 180px;
+  
+  h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a202c;
+  }
+  
+  p {
+    margin: 4px 0;
+    font-size: 13px;
+    color: #4a5568;
+
+    strong {
+      color: #2d3748;
+      font-weight: 600;
+    }
+  }
+
+  .stop-type {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 12px;
+    color: #718096;
+    font-style: italic;
+  }
+}
+
+// Estilos globales para la ruta del conductor
+:global {
+  .driver-route-line {
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.3));
+
+    &:hover {
+      filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+    }
+  }
+
+  .driver-route-glow {
+    transition: all 0.3s ease;
+    animation: routeGlow 3s ease-in-out infinite;
+  }
+
+  .driver-route-animated {
+    transition: all 0.3s ease;
+    pointer-events: none; // No interfiere con interacciones del mapa
+  }
+}
+
+// Animación de trazado de ruta mejorada
+@keyframes drawRoute {
+  0% {
+    stroke-dashoffset: inherit;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+// Animación de brillo/pulso para la ruta
+@keyframes routeGlow {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// Efecto de animación al aparecer
+@keyframes routeFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// Animación de movimiento de dashes (puntos en movimiento)
+@keyframes dashMove {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 1000;
+  }
+}
+
+// ================================
+// RESPONSIVE
+// ================================
+
+@media (max-width: 768px) {
+  .leaflet-map {
+    min-height: 400px;
+  }
+
+  .driver-map-container {
+    border-radius: 0;
+  }
+
+  .map-error {
+    left: 10px;
+    right: 10px;
+    transform: none;
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+
+  :global(.leaflet-control-zoom) {
+    margin-right: 10px !important;
+    margin-top: 80px !important;
+  }
+
+  :global(.leaflet-control-scale) {
+    margin-left: 10px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .stop-marker-wrapper {
+    &.start .stop-icon-large,
+    &.end .stop-icon-large {
+      width: 42px;
+      height: 42px;
+      font-size: 24px;
+    }
+
+    .stop-label {
+      font-size: 10px;
+      padding: 3px 8px;
+    }
+  }
+
+  // Ajustar grosor de líneas de ruta para móviles
+  :global {
+    .leaflet-pane .leaflet-overlay-pane svg path[class*="route"] {
+      stroke-width: 5 !important;
+    }
+
+    .driver-route-line {
+      filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.25));
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .leaflet-map {
+    min-height: 350px;
+  }
+
+  .map-loading {
+    .spinner {
+      width: 40px;
+      height: 40px;
+    }
+
+    p {
+      font-size: 14px;
+    }
+  }
+
+  .stop-marker-wrapper {
+    &.start .stop-icon-large,
+    &.end .stop-icon-large {
+      width: 38px;
+      height: 38px;
+      font-size: 22px;
+      border-width: 2px;
+    }
+
+    .stop-label {
+      font-size: 9px;
+      padding: 2px 6px;
+    }
+  }
+
+  :global(.driver-bus-popup) {
+    min-width: 160px;
+    
+    h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    
+    p {
+      font-size: 13px;
+    }
+  }
+
+  :global(.driver-stop-popup) {
+    min-width: 140px;
+    padding: 6px;
+    
+    h3 {
+      font-size: 14px;
+    }
+    
+    p {
+      font-size: 12px;
+    }
+  }
+}
+
+// Pantallas grandes
+@media (min-width: 1441px) {
+  .leaflet-map {
+    min-height: 600px;
+  }
+
+  .stop-marker-wrapper {
+    &.start .stop-icon-large,
+    &.end .stop-icon-large {
+      width: 52px;
+      height: 52px;
+      font-size: 28px;
+    }
+
+    .stop-label {
+      font-size: 12px;
+      padding: 5px 12px;
+    }
+  }
+
+  // Líneas más gruesas y con más efectos en pantallas grandes
+  :global {
+    .driver-route-line {
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.35));
+      
+      &:hover {
+        filter: drop-shadow(0 5px 16px rgba(0, 0, 0, 0.45));
+      }
+    }
+
+    .driver-route-glow {
+      animation: routeGlowLarge 2.5s ease-in-out infinite;
+    }
+  }
+
+  @keyframes routeGlowLarge {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 0.8;
+    }
+  }
+}
+
+
